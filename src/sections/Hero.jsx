@@ -27,15 +27,11 @@ export default function Hero() {
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
 
-    const isMobile = window.innerWidth < 768;
-    const numLights = isMobile ? 20 : 60;      // fewer lights for mobile
-    const shadowBlur = isMobile ? 5 : 15;      // smaller shadow blur
+    const numLights = 40; // reduce lights on smaller screens
 
-    // Initialize lights
     lights.current = Array.from({ length: numLights }).map(() => ({
       x: Math.random() * width,
       y: Math.random() * height,
@@ -45,7 +41,6 @@ export default function Hero() {
       opacityPhase: Math.random() * Math.PI * 2,
     }));
 
-    // Animate canvas
     const animate = () => {
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, width, height);
@@ -70,7 +65,7 @@ export default function Hero() {
         ctx.lineTo(light.x - w / 2, light.y);
         ctx.closePath();
 
-        ctx.shadowBlur = shadowBlur;
+        ctx.shadowBlur = 15;
         ctx.shadowColor = color;
         ctx.fillStyle = color;
         ctx.fill();
@@ -89,30 +84,19 @@ export default function Hero() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-
   return (
     <section
       id="hero"
       className="min-h-screen flex flex-col justify-center items-center text-center text-white relative overflow-hidden px-4 md:px-0"
     >
       {/* Canvas for lights */}
-      <canvas
-        ref={canvasRef}
-        className="absolute top-0 left-0 w-full h-full z-0 hero-canvas"
-        style={{ willChange: "transform, opacity" }}
-      />
+      <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full z-0" />
 
       {/* Moving purple backlight */}
       <motion.div
-        animate={{
-          x: isMobile ? ["-5%", "5%", "-5%"] : ["-10%", "10%", "-10%"],
-          y: isMobile ? ["-5%", "5%", "-5%"] : ["-10%", "10%", "-10%"],
-          scale: isMobile ? [1, 1.03, 1] : [1, 1.1, 1]
-        }}
+        animate={{ x: ["-10%", "10%", "-10%"], y: ["-10%", "10%", "-10%"], scale: [1, 1.05, 1] }}
         transition={{ duration: 8, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-        className={`absolute w-[${isMobile ? "200px" : "600px"}] h-[${isMobile ? "200px" : "600px"}] bg-purple-500 rounded-full blur-3xl opacity-20 z-0 hero-backlight`}
-        style={{ willChange: "transform, opacity" }}
+        className="absolute w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-purple-500 rounded-full blur-3xl opacity-20 z-0"
       />
 
       {/* Intro text */}
