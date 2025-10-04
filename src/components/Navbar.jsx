@@ -23,7 +23,7 @@ export default function Navbar() {
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6 }}
         >
-          Antonio
+          Antonio Codes
         </motion.div>
 
         {/* Desktop Menu */}
