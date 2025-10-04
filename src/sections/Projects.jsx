@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react"; // 👈 Import useRef
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaGithub } from "react-icons/fa";
 
@@ -7,7 +7,6 @@ export default function Projects() {
   const [showAll, setShowAll] = useState(false);
   const username = import.meta.env.VITE_GITHUB_USERNAME; // your GitHub username from .env
   
-  // 👈 1. Create a ref to attach to the Projects section
   const projectsRef = useRef(null); 
 
   useEffect(() => {
@@ -25,15 +24,15 @@ export default function Projects() {
   // Determine which repos are visible based on the showAll state
   const visibleRepos = showAll ? sortedRepos : sortedRepos.slice(0, 3);
   
-  // 👈 2. New handler function to manage state and scroll
+  // Handler function to manage state and scroll
   const handleToggleShow = () => {
     // If currently showing all, we are about to switch to show less
     if (showAll) {
       // Scroll to the top of the projects section
       if (projectsRef.current) {
         projectsRef.current.scrollIntoView({ 
-          behavior: 'smooth', // Make the scroll smooth
-          block: 'start'       // Scroll to the top edge of the section
+          behavior: 'smooth', 
+          block: 'start'       
         });
       }
     }
@@ -44,7 +43,6 @@ export default function Projects() {
   return (
     <section
       id="projects"
-      // 👈 3. Attach the ref here
       ref={projectsRef} 
       className="min-h-screen bg-gray-900 text-white flex flex-col items-center py-20 px-6 overflow-visible"
     >
@@ -59,22 +57,25 @@ export default function Projects() {
         Projects
       </motion.h2>
 
-      {/* Repo Grid Container - Add layout for smooth content shifting */}
+      {/* Repo Grid Container - layout enables smooth movement of remaining cards */}
       <motion.div
         layout
         className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl w-full"
       >
-        <AnimatePresence mode="popLayout"> 
+        {/* KEY CHANGE: Use mode="wait" to ensure items exit completely before new layout is finalized. */}
+        <AnimatePresence mode="wait"> 
           {visibleRepos.map((repo) => (
             <motion.a
               key={repo.id}
               href={repo.html_url}
               target="_blank"
               rel="noopener noreferrer"
+              // The key to smooth animation: layout prop
               layout 
-              initial={{ opacity: 0, y: 50, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -50, scale: 0.9 }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              // Exit animation is simplified and fast for better performance on mobile
+              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }} 
               transition={{ 
                 type: "spring", 
                 stiffness: 150, 
@@ -114,7 +115,6 @@ export default function Projects() {
       {/* Show More Button */}
       {sortedRepos.length > 3 && (
         <motion.button
-          // 👈 4. Call the new handler function
           onClick={handleToggleShow} 
           whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(168,85,247,0.7)" }}
           whileTap={{ scale: 0.95 }}
