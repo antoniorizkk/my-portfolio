@@ -26,9 +26,7 @@ export default function Projects() {
   
   // Handler function to manage state and scroll
   const handleToggleShow = () => {
-    // If currently showing all, we are about to switch to show less
     if (showAll) {
-      // Scroll to the top of the projects section
       if (projectsRef.current) {
         projectsRef.current.scrollIntoView({ 
           behavior: 'smooth', 
@@ -36,8 +34,14 @@ export default function Projects() {
         });
       }
     }
-    // Toggle the showAll state
     setShowAll(!showAll);
+  };
+
+  // Define the simple fade transition properties
+  const simpleFadeTransition = {
+    type: "tween",
+    ease: "easeOut",
+    duration: 0.35, // A gentle duration for a calm fade
   };
 
   return (
@@ -46,23 +50,23 @@ export default function Projects() {
       ref={projectsRef} 
       className="min-h-screen bg-gray-900 text-white flex flex-col items-center py-20 px-6 overflow-visible"
     >
-      {/* Heading */}
+      {/* Heading - Keep subtle lift for viewport animation */}
       <motion.h2
-        initial={{ opacity: 0, y: -50 }}
+        initial={{ opacity: 0, y: -20 }} 
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.6 }} 
         className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 mb-16 text-center leading-[1.2] overflow-visible pb-2"
       >
         Projects
       </motion.h2>
 
-      {/* Repo Grid Container - layout enables smooth movement of remaining cards */}
+      {/* Repo Grid Container - REMOVED 'layout' to prevent container stretching/jiggling */}
       <motion.div
-        layout
+        // REMOVED: layout
+        // REMOVED: transition={simpleFadeTransition}
         className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl w-full"
       >
-        {/* KEY CHANGE: Use mode="wait" to ensure items exit completely before new layout is finalized. */}
         <AnimatePresence mode="wait"> 
           {visibleRepos.map((repo) => (
             <motion.a
@@ -70,18 +74,14 @@ export default function Projects() {
               href={repo.html_url}
               target="_blank"
               rel="noopener noreferrer"
-              // The key to smooth animation: layout prop
+              // The 'layout' prop is still needed here to keep the *remaining* cards in place
               layout 
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              // Exit animation is simplified and fast for better performance on mobile
-              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }} 
-              transition={{ 
-                type: "spring", 
-                stiffness: 150, 
-                damping: 20,
-                duration: 0.4
-              }}
+              // Pure fade-in (no movement)
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }}
+              // Pure fade-out
+              exit={{ opacity: 0 }} 
+              transition={simpleFadeTransition} // Simple fade transition applied
               className="bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col justify-between border border-purple-500/30 hover:border-purple-400 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] transition duration-300 cursor-pointer overflow-hidden"
             >
               {/* Project Title */}
@@ -116,8 +116,8 @@ export default function Projects() {
       {sortedRepos.length > 3 && (
         <motion.button
           onClick={handleToggleShow} 
-          whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(168,85,247,0.7)" }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03, boxShadow: "0 0 15px rgba(168,85,247,0.5)" }} 
+          whileTap={{ scale: 0.98 }} 
           className="mt-12 px-8 py-3 bg-purple-500 text-white rounded-full font-semibold shadow-lg hover:bg-purple-600 transition duration-300"
         >
           {showAll ? "Show Less" : "Show More"}
