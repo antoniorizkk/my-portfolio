@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react"; // 👈 Import useRef
 import { motion, AnimatePresence } from "framer-motion";
 import { FaGithub } from "react-icons/fa";
 
@@ -6,6 +6,9 @@ export default function Projects() {
   const [repos, setRepos] = useState([]);
   const [showAll, setShowAll] = useState(false);
   const username = import.meta.env.VITE_GITHUB_USERNAME; // your GitHub username from .env
+  
+  // 👈 1. Create a ref to attach to the Projects section
+  const projectsRef = useRef(null); 
 
   useEffect(() => {
     if (!username) return;
@@ -15,37 +18,69 @@ export default function Projects() {
       .catch((err) => console.error("Error fetching repos:", err));
   }, [username]);
 
-  const visibleRepos = showAll ? repos : repos.slice(0, 3);
+  // Filter out forks and repos without descriptions, then sort by stars for better showcase
+  const filteredRepos = repos.filter(repo => !repo.fork && repo.description);
+  const sortedRepos = filteredRepos.sort((a, b) => b.stargazers_count - a.stargazers_count);
+  
+  // Determine which repos are visible based on the showAll state
+  const visibleRepos = showAll ? sortedRepos : sortedRepos.slice(0, 3);
+  
+  // 👈 2. New handler function to manage state and scroll
+  const handleToggleShow = () => {
+    // If currently showing all, we are about to switch to show less
+    if (showAll) {
+      // Scroll to the top of the projects section
+      if (projectsRef.current) {
+        projectsRef.current.scrollIntoView({ 
+          behavior: 'smooth', // Make the scroll smooth
+          block: 'start'       // Scroll to the top edge of the section
+        });
+      }
+    }
+    // Toggle the showAll state
+    setShowAll(!showAll);
+  };
 
   return (
     <section
       id="projects"
+      // 👈 3. Attach the ref here
+      ref={projectsRef} 
       className="min-h-screen bg-gray-900 text-white flex flex-col items-center py-20 px-6 overflow-visible"
     >
-      {/* Heading (fixed clipping issue) */}
-    <motion.h2
-      initial={{ opacity: 0, y: -50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
-      className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 mb-16 text-center leading-[1.2] overflow-visible pb-2"
-    >
-      Projects
-    </motion.h2>
+      {/* Heading */}
+      <motion.h2
+        initial={{ opacity: 0, y: -50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 mb-16 text-center leading-[1.2] overflow-visible pb-2"
+      >
+        Projects
+      </motion.h2>
 
-      {/* Repo Grid */}
-      <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl w-full">
-        <AnimatePresence>
+      {/* Repo Grid Container - Add layout for smooth content shifting */}
+      <motion.div
+        layout
+        className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl w-full"
+      >
+        <AnimatePresence mode="popLayout"> 
           {visibleRepos.map((repo) => (
             <motion.a
               key={repo.id}
               href={repo.html_url}
               target="_blank"
               rel="noopener noreferrer"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
+              layout 
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -50, scale: 0.9 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 150, 
+                damping: 20,
+                duration: 0.4
+              }}
               className="bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col justify-between border border-purple-500/30 hover:border-purple-400 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] transition duration-300 cursor-pointer overflow-hidden"
             >
               {/* Project Title */}
@@ -74,12 +109,13 @@ export default function Projects() {
             </motion.a>
           ))}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
       {/* Show More Button */}
-      {repos.length > 3 && (
+      {sortedRepos.length > 3 && (
         <motion.button
-          onClick={() => setShowAll(!showAll)}
+          // 👈 4. Call the new handler function
+          onClick={handleToggleShow} 
           whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(168,85,247,0.7)" }}
           whileTap={{ scale: 0.95 }}
           className="mt-12 px-8 py-3 bg-purple-500 text-white rounded-full font-semibold shadow-lg hover:bg-purple-600 transition duration-300"
