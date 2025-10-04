@@ -2,6 +2,13 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaLinkedin } from "react-icons/fa";
 
+// ✅ Use import.meta.env for Vite
+const LINKEDIN_URL = import.meta.env.VITE_LINKEDIN_URL;
+const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL;
+
+console.log("LinkedIn URL:", LINKEDIN_URL);
+console.log("Contact Email:", CONTACT_EMAIL);
+
 export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState({});
@@ -15,7 +22,8 @@ export default function Contact() {
     const newErrors = {};
     if (!form.name.trim()) newErrors.name = "Name is required.";
     if (!form.email.trim()) newErrors.email = "Email is required.";
-    else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = "Email is invalid.";
+    else if (!/\S+@\S+\.\S+/.test(form.email))
+      newErrors.email = "Email is invalid.";
     if (!form.message.trim()) newErrors.message = "Message cannot be empty.";
     return newErrors;
   };
@@ -23,11 +31,17 @@ export default function Contact() {
   const handleSubmit = (e) => {
     e.preventDefault();
     const validationErrors = validate();
+
     if (Object.keys(validationErrors).length === 0) {
-      // Send email via mailto (replace process.env.NEXT_PUBLIC_EMAIL with your .env variable)
-      const email = process.env.NEXT_PUBLIC_EMAIL || "antonio.rizk@hotmail.com";
-      window.location.href = `mailto:${email}?subject=Contact from ${form.name}&body=${encodeURIComponent(form.message)}`;
-      setSubmitted(true);
+      if (CONTACT_EMAIL) {
+        window.location.href = `mailto:${CONTACT_EMAIL}?subject=Contact from ${form.name}&body=${encodeURIComponent(
+          form.message
+        )}`;
+        setSubmitted(true);
+      } else {
+        alert("Email not configured — please set VITE_CONTACT_EMAIL in .env");
+      }
+
       setForm({ name: "", email: "", message: "" });
       setErrors({});
     } else {
@@ -71,7 +85,9 @@ export default function Contact() {
               errors.name ? "ring-2 ring-red-500" : ""
             }`}
           />
-          {errors.name && <span className="text-red-400 text-sm mt-1">{errors.name}</span>}
+          {errors.name && (
+            <span className="text-red-400 text-sm mt-1">{errors.name}</span>
+          )}
         </div>
 
         <div className="flex flex-col">
@@ -85,7 +101,9 @@ export default function Contact() {
               errors.email ? "ring-2 ring-red-500" : ""
             }`}
           />
-          {errors.email && <span className="text-red-400 text-sm mt-1">{errors.email}</span>}
+          {errors.email && (
+            <span className="text-red-400 text-sm mt-1">{errors.email}</span>
+          )}
         </div>
 
         <div className="flex flex-col">
@@ -99,7 +117,11 @@ export default function Contact() {
               errors.message ? "ring-2 ring-red-500" : ""
             }`}
           />
-          {errors.message && <span className="text-red-400 text-sm mt-1">{errors.message}</span>}
+          {errors.message && (
+            <span className="text-red-400 text-sm mt-1">
+              {errors.message}
+            </span>
+          )}
         </div>
 
         <motion.button
@@ -122,14 +144,16 @@ export default function Contact() {
       >
         <p className="mb-2">Connect with me:</p>
         <a
-          href="https://www.linkedin.com/in/antonio-rizk-dev"
+          href={LINKEDIN_URL || "#"}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 text-purple-400 hover:text-purple-500 hover:shadow-[0_0_15px_rgba(168,85,247,0.7)] transition duration-300"
         >
           <FaLinkedin className="text-2xl" /> LinkedIn
         </a>
-        <p className="mt-4 text-sm text-gray-500">&copy; {new Date().getFullYear()} Antonio. All rights reserved.</p>
+        <p className="mt-4 text-sm text-gray-500">
+          &copy; {new Date().getFullYear()} Antonio. All rights reserved.
+        </p>
       </motion.footer>
     </section>
   );
